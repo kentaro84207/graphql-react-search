@@ -4,10 +4,11 @@ import { Query } from 'react-apollo'
 import client from './client'
 import { SEARCH_REPOSITORIES } from './graphql'
 
+const PER_PAGE = 5
 const DEFAULT_STATE = {
   after: null,
   before: null,
-  first: 5,
+  first: PER_PAGE,
   last: null,
   query: "フロントエンドエンジニア"
 }
@@ -56,6 +57,25 @@ const App = () => {
                     })
                   }
                 </ul>
+
+                {
+                  search.pageInfo.hasNextPage ?
+                  <button
+                    onClick={()=> {
+                      setState({
+                        ...state,
+                        first: PER_PAGE,
+                        after: search.pageInfo.endCursor,
+                        last: null,
+                        before
+                      })
+                    }}
+                  >
+                    Next
+                  </button>
+                  :
+                  null
+                }
               </>
             )
           }

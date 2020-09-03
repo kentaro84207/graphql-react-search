@@ -59,6 +59,25 @@ const App = () => {
                 </ul>
 
                 {
+                  search.pageInfo.hasPreviousPage ?
+                  <button
+                    onClick={()=> {
+                      setState({
+                        ...state,
+                        first: null,
+                        after: null,
+                        last: PER_PAGE,
+                        before: search.pageInfo.startCursor
+                      })
+                    }}
+                  >
+                    Previous
+                  </button>
+                  :
+                  null
+                }
+
+                {
                   search.pageInfo.hasNextPage ?
                   <button
                     onClick={()=> {
@@ -67,7 +86,7 @@ const App = () => {
                         first: PER_PAGE,
                         after: search.pageInfo.endCursor,
                         last: null,
-                        before
+                        before: null
                       })
                     }}
                   >

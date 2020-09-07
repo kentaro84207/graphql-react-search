@@ -13,7 +13,30 @@ const StarButton = ({node, query, first, last, before, after}) => {
         onClick={
           () => {
             addOrRmoveStar({
-              variables: {input: {starrableId: node.id}}
+              variables: {input: {starrableId: node.id}},
+              update: (store, {data: {addStar, removeStar}}) => {
+                const {starrable} = addStar || removeStar
+                const data = store.readQuery({
+                  query: SEARCH_REPOSITORIES,
+                  variables: { query, first, last, before, after }
+                })
+                const {edges} = data.search
+                const newEdges = edges.map(edge => {
+                  if (edge.node.id === node.id) {
+                    const {totalCount} = edge.node.stargazers
+                    // const diff = viewerHasStarred ? -1 : 1
+                    const diff = starrable.viewerHasStarred ? 1 : -1
+                    const newTotalCount = totalCount + diff
+                    edge.node.stargazers.totalCount = newTotalCount
+                  }
+                  return edge
+                })
+                data.search.edges = newEdges
+                store.writeQuery({
+                  query: SEARCH_REPOSITORIES,
+                  data
+                })
+              }
             })
           }
         }>
@@ -25,14 +48,15 @@ const StarButton = ({node, query, first, last, before, after}) => {
   return (
     <Mutation
       mutation={viewerHasStarred ? REMOVE_STAR : ADD_STAR}
-      refetchQueries={
-        [
-          {
-            query: SEARCH_REPOSITORIES,
-            variables: { query, first, last, before, after }
-          }
-        ]
-      }
+      // graphQLからfetchするパターン
+      // refetchQueries={
+      //   [
+      //     {
+      //       query: SEARCH_REPOSITORIES,
+      //       variables: { query, first, last, before, after }
+      //     }
+      //   ]
+      // }
     >
       {
         addOrRmoveStar => <StarStatus addOrRmoveStar={addOrRmoveStar} /> 
